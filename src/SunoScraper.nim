@@ -1,19 +1,22 @@
+import dimscord, asyncdispatch, strutils, options
+import dotenv, std/os
 import std/json
 import std/httpclient
-import dimscord, asyncdispatch, strutils, options
 import tables
-import dotenv, std/os
 
 # Load environment variables from .env file
 load()
 
-## --- HTTP
+# Load discord bot object
+let discord = newDiscordClient(getEnv("DISCORD_TOKEN"))
+
+# --- HTTP
 proc makeHttpRequest(url: string): JsonNode =
   var client = newHttpClient()
   var response = client.getContent(url)
   return parseJson(response)
 
-## --- SunoScraper
+# --- SunoScraper
 
 type
   SunoSong = object
@@ -31,7 +34,11 @@ proc searchSunoSong(songTitle: string): SunoSong =
   var song = SunoSong(title: "Song Title", artist: "Artist Name", album: "Album Name", year: 2021, genre: "Genre", duration: 180, lyrics: "Lyrics", url: "https://example.com")
   return song
 
-## --- Discord
+proc createSunoPlaylist(songs: seq[SunoSong]): string =
+  # Create new playlist on Suno using HttpClient
+  return "Playlist created"
+
+# --- Discord
 
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
   discard await discord.api.bulOverwriteApplicationCommands(
@@ -40,6 +47,7 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
       ApplicationCommand(
         name: "search",
         kind: atUser,
+      )
     ],
     guild_id = "YOUR_GUILD_ID"
   )
